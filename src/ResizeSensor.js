@@ -3,9 +3,23 @@
  * directory of this distribution and at
  * https://github.com/marcj/css-element-queries/blob/master/LICENSE.
  */
-;
-(function() {
 
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(function() {
+            return (root.ResizeSensor = factory());
+        });
+    } else if (typeof module === 'object' && module.exports) {
+        // Node. Does not work with strict CommonJS, but
+        // only CommonJS-like enviroments that support module.exports,
+        // like Node.
+        module.exports = factory();
+    } else {
+        // Browser globals
+        root.ResizeSensor = factory();
+    }
+}(this, function() {
     /**
      * Class for dimension change detection.
      *
@@ -14,7 +28,7 @@
      *
      * @constructor
      */
-    this.ResizeSensor = function(element, callback) {
+    var ResizeSensor = function(element, callback) {
         /**
          *
          * @constructor
@@ -114,18 +128,18 @@
                     el.addEventListener(name, cb);
                 }
             };
-            
+
             var onScroll = function() {
-              if (element.offsetWidth != lastWidth || element.offsetHeight != lastHeight) {
-                  changed();
-              }
-              reset();
+                if (element.offsetWidth != lastWidth || element.offsetHeight != lastHeight) {
+                    changed();
+                }
+                reset();
             }
 
             addEvent(expand, 'scroll', onScroll);
             addEvent(shrink, 'scroll', onScroll);
         }
-        
+
         var elementType = Object.prototype.toString.call(element);
         if ('[object Array]' === elementType
             || ('[object NodeList]' === elementType)
@@ -146,7 +160,7 @@
         };
     };
 
-    this.ResizeSensor.detach = function(element) {
+    ResizeSensor.detach = function(element) {
         if (element.resizeSensor) {
             element.removeChild(element.resizeSensor);
             delete element.resizeSensor;
@@ -154,4 +168,5 @@
         }
     };
 
-})();
+    return ResizeSensor;
+}));
