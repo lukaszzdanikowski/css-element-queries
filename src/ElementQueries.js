@@ -179,19 +179,30 @@
             }
         }
 
-        var regex = /,?([^,\n]*?)\[[\s\t]*?(min|max)-(width|height)[\s\t]*?[~$\^]?=[\s\t]*?"([^"]*?)"[\s\t]*?]([^\n\s\{]*?)/mgi;
+        var queryRegex = /\[(min|max)\-(width|height)[\b\~\|\^\$\*]=\"(\w*)\"/mgi;
+        /**
+         * @param {String} css
+         */
+        function extractQuery(selector, css) {
+            var match;
+            while (null !== (match = queryRegex.exec(css))) {
+                if (3 < match.length) {
+                    queueQuery(selector, match[1], match[2], match[3]);
+                }
+            }
+        }
+
+        var selectorRegex = /(?:^|)([\.\#\[\]\-\w]*)\[(?:min|max)\-(?:width|height)[\~\|\^\$\*]?=\"\w*\"\](?:[\s,]|[^\]]+\]?([\.\#\-\w\~\|\^\$\*\=\"]+))/mgi;
 
         /**
          * @param {String} css
          */
-        function extractQuery(css) {
+        function extractSelector(css) {
             var match;
-            var smatch;
             css = css.replace(/'/g, '"');
-            while (null !== (match = regex.exec(css))) {
-                if (5 < match.length) {
-                    smatch = match[1] || match[5] || smatch;
-                    queueQuery(smatch, match[2], match[3], match[4]);
+            while (null !== (match = selectorRegex.exec(css))) {
+                if (1 < match.length) {
+                    extractQuery(match[1] || match[2], match[0]);
                 }
             }
         }
@@ -207,16 +218,16 @@
             if ('string' === typeof rules) {
                 rules = rules.toLowerCase();
                 if (-1 !== rules.indexOf('min-width') || -1 !== rules.indexOf('max-width')) {
-                    extractQuery(rules);
+                    extractSelector(rules);
                 }
             } else {
                 for (var i = 0, j = rules.length; i < j; i++) {
                     if (1 === rules[i].type) {
                         selector = rules[i].selectorText || rules[i].cssText;
                         if (-1 !== selector.indexOf('min-height') || -1 !== selector.indexOf('max-height')) {
-                            extractQuery(selector);
+                            extractSelector(selector);
                         }else if(-1 !== selector.indexOf('min-width') || -1 !== selector.indexOf('max-width')) {
-                            extractQuery(selector);
+                            extractSelector(selector);
                         }
                     } else if (4 === rules[i].type) {
                         readRules(rules[i].cssRules || rules[i].rules);
