@@ -246,7 +246,7 @@
             this.withTracking = withTracking;
             for (var i = 0, j = document.styleSheets.length; i < j; i++) {
                 try {
-                    readRules(document.styleSheets[i].cssText || document.styleSheets[i].cssRules || document.styleSheets[i].rules);
+                    readRules(document.styleSheets[i].cssRules || document.styleSheets[i].rules || document.styleSheets[i].cssText);
                 } catch(e) {
                     if (e.name !== 'SecurityError') {
                         throw e;
@@ -314,40 +314,5 @@
 
         ElementQueries.instance.init(ElementQueries.withTracking);
     };
-
-    var domLoaded = function (callback) {
-        /* Internet Explorer */
-        /*@cc_on
-        @if (@_win32 || @_win64)
-            document.write('<script id="ieScriptLoad" defer src="//:"><\/script>');
-            document.getElementById('ieScriptLoad').onreadystatechange = function() {
-                if (this.readyState == 'complete') {
-                    callback();
-                }
-            };
-        @end @*/
-        /* Mozilla, Chrome, Opera */
-        if (document.addEventListener) {
-            document.addEventListener('DOMContentLoaded', callback, false);
-        }
-        /* Safari, iCab, Konqueror */
-        if (/KHTML|WebKit|iCab/i.test(navigator.userAgent)) {
-            var DOMLoadTimer = setInterval(function () {
-                if (/loaded|complete/i.test(document.readyState)) {
-                    callback();
-                    clearInterval(DOMLoadTimer);
-                }
-            }, 10);
-        }
-        /* Other web browsers */
-        window.onload = callback;
-    };
-
-    if (window.addEventListener) {
-        window.addEventListener('load', ElementQueries.init, false);
-    } else {
-        window.attachEvent('onload', ElementQueries.init);
-    }
-    domLoaded(ElementQueries.init);
 
 })();
